@@ -1,7 +1,12 @@
-import User from '../models/users.model.js'
-import asyncHandler from "express-async-handler"
+import User from '../models/users.model.js';
+import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
-import validator from 'validator'
+import validator from 'validator';
+import jwt from "jsonwebtoken";
+
+const create = (_id)=>{
+    return jwt.sign({_id},process.env.SECRET,{expiresIn:'3d'})
+}
 
 export const signIn = asyncHandler(async((req,res)=>{
     const{name,email,password} = req.body;
