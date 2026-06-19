@@ -1,4 +1,4 @@
-import User from '../models/users.model.js';
+import {User} from '../models/users.model.js';
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import validator from 'validator';
@@ -25,7 +25,7 @@ export const signIn = asyncHandler(async((req,res)=>{
     }
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password,salt)
-    const user = await this.create(name,email,password: hash)
+    const user = await User.create(name,email,password: hash)
     res.status(201).json({
         id: user._id,
         name: user.name,
@@ -39,7 +39,7 @@ export const deleteUser = asyncHandler(async((req,res)=>{
         res.status(400)
         throw new Error("The user doesn't exist")
     }
-    await user.deleteOne;
+    await user.deleteOne();
     res.status(201).json({
     message: "Account deleted successfully!"
     })
