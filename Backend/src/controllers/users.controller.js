@@ -4,11 +4,11 @@ import bcrypt from "bcrypt";
 import validator from 'validator';
 import jwt from "jsonwebtoken";
 
-const create = (_id)=>{
+const createToken = (_id)=>{
     return jwt.sign({_id},process.env.SECRET,{expiresIn:'3d'})
 }
 
-export const signIn = asyncHandler(async((req,res)=>{
+export const signIn = asyncHandler(async(req,res)=>{
     const{name,email,password} = req.body;
     if(!name || !email || !password){
         res.status(400)
@@ -25,14 +25,21 @@ export const signIn = asyncHandler(async((req,res)=>{
     }
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password,salt)
-    const user = await User.create(name,email,password: hash)
+    const user = await User.create({name,email,password: hash});
+    const token = createToken(user._id);
+        res.cookie("token",token,{
+            httpOnly: true,
+            secure: process.env.NODE_ENV ==="production",
+            sameSite: "lax",
+            maxAge: 3*24*60*60*1000
+        })
     res.status(201).json({
         id: user._id,
         name: user.name,
         email: user.email,
       });
-}))
-export const deleteUser = asyncHandler(async((req,res)=>{
+})
+export const deleteUser = asyncHandler(async(req,res)=>{
     const user = await User.findById(req.user.id);
 
     if(!user){
@@ -43,8 +50,8 @@ export const deleteUser = asyncHandler(async((req,res)=>{
     res.status(201).json({
     message: "Account deleted successfully!"
     })
-}))
-export const updateUser = asyncHandler(async((req,res)=>{
+})
+export const updateUser = asyncHandler(async(req,res)=>{
     const{name} = req.body;
     const user = await User.findByIdAndUpdate(req.user.id,{name: name.trim()},{new: true,runValidators:true})
     if(!user){
@@ -56,8 +63,8 @@ export const updateUser = asyncHandler(async((req,res)=>{
        name: user.name,
        email: user.email,
     })
-}))
-export const logIn = asyncHandler(async((req,res)=>{
+})
+export const logIn = asyncHandler(async(req,res)=>{
     const{email,password} = req.body;
     if(!email || !password){
         res.status(400)
@@ -73,5 +80,12 @@ export const logIn = asyncHandler(async((req,res)=>{
         res.status(400)
         throw new Error("Invalid password");
     }
+    const token = createToken(exists._id);
+    res.cookie("token",token,{
+        httpOnly: true,
+        secure: process.env.NODE_ENV ==="production",
+        sameSite: "lax",
+        maxAge: 3*24*60*60*1000
+    })
     res.status(200).json({email})
-}))
+})

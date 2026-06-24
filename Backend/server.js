@@ -3,15 +3,18 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser'
-import authenticator from './src/middlewares/Auth.js'
 import errorHandler from './src/middlewares/ErrorHandler.js'
+import userRoutes from './src/routes/user.route.js'
+import courseRoutes from './src/routes/course.route.js'
+
 dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
-app.use(authenticator);
 const port = process.env.PORT;
+app.use("/api/user",userRoutes);
+app.use("/api/course",courseRoutes);
 app.use(errorHandler);
 
 mongoose.connect(process.env.MONGODB_URI)
